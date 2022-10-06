@@ -116,6 +116,7 @@ public class AwsAppConfigSource implements ConfigSource {
 			// The response will include the next token we're supposed to use.
 			session= response.nextPollConfigurationToken();
 
+			/*
 			// I'm not quite sure what this is supposed to be used for - we want to poll when
 			// we want to poll.  I guess we could back-link this to tell the polling manager
 			// when to ask again, but it's a weird intrusion between layers.
@@ -123,6 +124,7 @@ public class AwsAppConfigSource implements ConfigSource {
 			
 			// For now just log it to see what's going on.
 			log.info("Next poll seconds = " + nextPollSeconds);
+			*/
 
 			SdkBytes contentSdkBytes= response.configuration();
 			ByteBuffer contentBytes= contentSdkBytes.asByteBuffer();
