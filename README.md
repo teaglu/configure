@@ -1,8 +1,13 @@
 # Configure
 
 This project is a generic library to deal with configuration and secrets.  Configurations are
-in the form of a Composite, and secrets are a map from string to string.  A replacer is included
-to make it easy to use replacement sequences in the configuration to refer to secrets.
+in the form of a [Composite](https://github.com/teaglu/composite), and secrets are a map from
+string to string.  A replacer is included to make it easy to use replacement sequences in the
+configuration to refer to secrets.
+
+Keeping credentials / secrets in a separate location and referencing them from the configuration
+allows configurations to be centrally managed, while keeping the credentials onsite and in as
+few places as possible.
 
 ## Configuration Managers
 
@@ -16,11 +21,15 @@ in-place update, or it may delete all running items and recreate them.  If you c
 target throws an exception, the manager will consider this as a rejection of the configuration
 and will report it back to the source if the source supports that function.
 
+Configuration URIs may be followed by optional local parameters after a hash sign.  For example:
+
+    aws://appconfig/helloworld/config/prod#pollTime=60&alarm=prodfail
+
 ## Configuration Manager Factory
 
 The configuration manager factory takes a URI string, which can either be passed in or read from
 an environment variable.  The default environment variable is named CONFIGURATION.  The following
-formats are available:
+formats are available.
 
 ### docker://{secret}
 
@@ -35,14 +44,14 @@ is determined based on the content type returned from AppConfig.  The {applicati
 {configuration}, and {environment} variables refer to the entities of the same name in AWS
 AppConfig.
 
-If the alarm name is set and non-blank, then a cloudwatch alarm with the given name will be
+If the `alarm` local parameter is set, then a cloudwatch alarm with the given name will be
 triggered if the configuration fails to apply.  The name should correspond to a cloudwatch
-alarm linked to the configuration so that rollback is triggered.
+alarm linked to the configuration so that rollback is triggered.  (Not tested)
 
 ### smbtrack://{host}/{token}
 
 This creates a configuration based on SMBTrack managed configurations.  The {host} variable
-is the hostname of your SMBTrack installation.  If the polltime is omitted 300 seconds is
+is the hostname of your SMBTrack installation.  If the polltime is omitted 15 seconds is
 used as the default.
 
 ### debug://{path}
@@ -64,34 +73,96 @@ URI formats are available:
 
 ### docker://{secret}
 
-This creates a configuration based on a docker secret.  The format may be either json or yaml,
-and if omitted json will be assumed.  The configuration will be read once and not monitored
-because secrets are immutable.
+This creates a secret provider based on a docker secret.  The secret file is formatted as a java
+properties file, consisting of keys followed by a colon and a value.
 
-### aws://appconfig/{application}/{configuration}/{environment}
+### aws://secretsmanager/{region}/{secret}
 
-This creates a configuration based on AWS AppConfig.  The format may be either json or yaml, and
-is determined based on the content type returned from AppConfig.  The {application},
-{configuration}, and {environment} variables refer to the entities of the same name in AWS
-AppConfig.  If the pollTime is omitted 300 seconds is used as the default.
-
-If the alarm name is set and non-blank, then a cloudwatch alarm with the given name will be
-triggered if the configuration fails to apply.  The name should correspond to a cloudwatch
-alarm linked to the configuration so that rollback is triggered.
-
-### smbtrack://{host}/{token}
-
-This creates a configuration based on SMBTrack managed configurations.  The {host} variable
-is the hostname of your SMBTrack installation.  If the polltime is omitted 300 seconds is
-used as the default.
+This creates a secret provider based on AWS SecretsManager.  The region and secret name correspond
+to the AWS region code and the name of the secret.
 
 ### debug://{path}
 
-This creates a configuration based on reading a static file.  The path is the absolute or
-relative path to the configuration file.  The format may be either "json" or "yaml" and defaults
-based on the file extension.  The file will be checked every 15 seconds for changes.
+This creates a secret provider based on reading a static file.  The path is the absolute or
+relative path to the configuration file.  The file is formatted as a java properties file,
+consisting of keys followed by a colon and a value.
 
-### http:// and https://
+## Example Startup Code
 
-Using a full URL starting with "http" or "https" will create a configuration based on reading
-from a remote webserver.  The configuration will be polled every 300 seconds.
+This is an example of a Main class using the Configuration library.  It supports live
+reconfiguration, but does so by stopping all existing jobs before creating new jobs.  In actual
+use it may be worthwhile to look for changes and apply them instead.
+
+    public class Main {
+        private static final Logger log= LoggerFactory.getLogger(Main.class);
+        private static final CountDownLatch quitLatch= new CountDownLatch(1);
+    
+        public static void main(String args[]) {
+            try {
+                // Create a secret provider based on environment
+                SecretProvider secretProvider= SecretProviderFactory
+                        .getInstance()
+                        .createFromEnvironment();
+    
+                // Create a target for the configuration manager to operate on
+                ConfigTarget target= new ConfigTarget() {
+                    @Override
+                    public void apply(@NonNull Composite config) throws Exception {
+                        Main.loadConfig(config, secretProvider);
+                    }
+    
+                    @Override
+                    public void shutdown() {
+                        quitLatch.countDown();  
+                    }
+                };
+    
+                // Create a configuration manager based on environment
+                ConfigManager configManager= ConfigManagerFactory
+                        .getInstance()
+                        .createFromEnvironment(target, AtIdSecretReplacer.Create(secretProvider));
+                
+                // Start the configuration manager
+                configManager.start();
+    
+                // The main thread just waits on a latch until it's time to shut everything down.
+                for (boolean run= true; run;) {
+                    try {
+                        quitLatch.await();
+                        run= false;
+                    } catch (InterruptedException e) {
+                    }
+                }
+    
+                // Shut down the manager normally
+                configManager.stop();
+                
+                // Stop any running jobs
+                stopJobs();
+            } catch (Exception e) {
+                log.error("Error in main startup", e);
+            }
+        }
+    
+        private static void loadConfig(
+                @NonNull Composite config,
+                @NonNull SecretProvider secretProvider) throws Exception
+        {
+            stopJobs();
+            startJobs(config, secretProvider);
+        }
+        
+        private static void stopJobs()
+        {
+            // FIXME
+        }
+        
+        private static void startJobs(
+                @NonNull Composite config,
+                @NonNull SecretProvider secretProvider) throws Exception
+        {
+            // FIXME
+        }
+    }
+
+    
