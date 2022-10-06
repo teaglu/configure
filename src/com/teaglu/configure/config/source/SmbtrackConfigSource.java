@@ -39,8 +39,8 @@ import com.teaglu.configure.exception.ApiResponseFormatException;
 import com.teaglu.configure.exception.ApiStatusException;
 import com.teaglu.configure.exception.ConfigException;
 
-public class ManagedConfigSource implements ConfigSource {
-	private static final Logger log= LoggerFactory.getLogger(ManagedConfigSource.class);
+public class SmbtrackConfigSource implements ConfigSource {
+	private static final Logger log= LoggerFactory.getLogger(SmbtrackConfigSource.class);
 	
 	private static final String USER_AGENT= "Teaglu-Configure-Lib";
 	
@@ -61,7 +61,7 @@ public class ManagedConfigSource implements ConfigSource {
 	private boolean needsLoad= true;
 	private boolean needsReport= false;
 	
-	private ManagedConfigSource(
+	private SmbtrackConfigSource(
 			@NonNull String host,
 			@NonNull String token) throws ConfigException
 	{
@@ -142,7 +142,7 @@ public class ManagedConfigSource implements ConfigSource {
 			@NonNull String host,
 			@NonNull String token) throws ConfigException
 	{
-		return new ManagedConfigSource(host, token);
+		return new SmbtrackConfigSource(host, token);
 	}
 	
 	private String getJsonHash(@NonNull Composite el) {

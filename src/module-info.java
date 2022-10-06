@@ -7,6 +7,7 @@ module com.teaglu.configure {
 	requires software.amazon.awssdk.regions;
 	
 	requires software.amazon.awssdk.services.appconfig;
+	requires software.amazon.awssdk.services.appconfigdata;
 	requires software.amazon.awssdk.services.secretsmanager;
 	requires software.amazon.awssdk.utils;
 	

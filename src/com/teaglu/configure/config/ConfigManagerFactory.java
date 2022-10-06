@@ -9,9 +9,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.teaglu.configure.config.manager.ImmuntableConfigManager;
 import com.teaglu.configure.config.manager.PollingConfigManager;
 import com.teaglu.configure.config.parser.JsonConfigParser;
-import com.teaglu.configure.config.source.AwsConfigSource;
+import com.teaglu.configure.config.source.AwsAppConfigSource;
 import com.teaglu.configure.config.source.FileConfigSource;
-import com.teaglu.configure.config.source.ManagedConfigSource;
+import com.teaglu.configure.config.source.SmbtrackConfigSource;
 import com.teaglu.configure.config.source.UrlConfigSource;
 import com.teaglu.configure.exception.ConfigException;
 import com.teaglu.configure.secret.SecretReplacer;
@@ -97,8 +97,8 @@ public class ConfigManagerFactory {
 		case "aws":
 			return createAwsConfigManager(uri, configTarget);
 			
-		case "managed":
-			return createManagedConfigManager(uri, configTarget);
+		case "smbtrack":
+			return createSmbtrackConfigManager(uri, configTarget);
 		
 		default:
 			throw new ConfigException(
@@ -242,7 +242,7 @@ public class ConfigManagerFactory {
 	}
 	
 	/**
-	 * createManagedConfigManager
+	 * createSmbtrackConfigManager
 	 * 
 	 * Create a configuration manager for a SMBTrack-managed configuration.
 	 * 
@@ -253,7 +253,7 @@ public class ConfigManagerFactory {
 	 * 
 	 * @throws ConfigException			Anything that went wrong
 	 */
-	private @NonNull ConfigManager createManagedConfigManager(
+	private @NonNull ConfigManager createSmbtrackConfigManager(
 			@NonNull Uri uri,
 			@NonNull ConfigTarget configTarget) throws ConfigException
 	{
@@ -275,7 +275,7 @@ public class ConfigManagerFactory {
 			}
 		}
 		
-		ConfigSource source= ManagedConfigSource.Create(host, token);				
+		ConfigSource source= SmbtrackConfigSource.Create(host, token);				
 		return PollingConfigManager.Create(source, configTarget, pollTime);
 	}
 	
@@ -320,9 +320,16 @@ public class ConfigManagerFactory {
 						"Polling frequency is not a number", e);
 			}
 		}
+
+		// The AppConfig session stuff requires you (for some reason) to pass in the minimum
+		// required polling time, and it has a minimum of 15.  We're giving 15 seconds of slack
+		// time so set our minimum at 30.
+		if (pollTime < 30) {
+			pollTime= 30;
+		}
 		
-		ConfigSource source= AwsConfigSource.Create(
-				applicationId, configurationId, environmentId, alarmName);
+		ConfigSource source= AwsAppConfigSource.Create(
+				applicationId, configurationId, environmentId, pollTime - 15, alarmName);
 		
 		return PollingConfigManager.Create(source, configTarget, pollTime);
 	}

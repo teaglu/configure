@@ -4,6 +4,18 @@ This project is a generic library to deal with configuration and secrets.  Confi
 in the form of a Composite, and secrets are a map from string to string.  A replacer is included
 to make it easy to use replacement sequences in the configuration to refer to secrets.
 
+## Configuration Managers
+
+A configuration manager retrieves configurations and sends them to a target to be applied.  The
+manager continues to run as a background thread during the operation of the program, and monitors
+the configuration for changes.  When a change is detected, the configuration will be sent to
+the target again.
+
+Your target may decide to merge the new configuration with the running one for a more seamless
+in-place update, or it may delete all running items and recreate them.  If you configuration
+target throws an exception, the manager will consider this as a rejection of the configuration
+and will report it back to the source if the source supports that function.
+
 ## Configuration Manager Factory
 
 The configuration manager factory takes a URI string, which can either be passed in or read from
