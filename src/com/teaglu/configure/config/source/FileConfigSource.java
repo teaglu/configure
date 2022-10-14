@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,11 @@ public class FileConfigSource implements ConfigSource {
 	}
 
 	@Override
-	public void reportFailure(@NonNull String code, @NonNull String message) {
+	public void reportFailure(
+			@NonNull String code,
+			@NonNull String message,
+			@Nullable Throwable cause)
+	{
 	}
 
 	@Override

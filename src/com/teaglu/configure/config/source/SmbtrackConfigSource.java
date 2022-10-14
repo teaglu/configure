@@ -21,6 +21,7 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class SmbtrackConfigSource implements ConfigSource {
 	private static final Logger log= LoggerFactory.getLogger(SmbtrackConfigSource.class);
 	
 	private static final String USER_AGENT= "Teaglu-Configure-Lib";
+	private static final int READ_BUFFER_SIZE= 2048;
 	
 	private final @NonNull URL configUrl;
 	
@@ -93,7 +95,7 @@ public class SmbtrackConfigSource implements ConfigSource {
 								
 								StringBuilder contentBuilder= new StringBuilder();
 								
-								char buffer[]= new char[2048];
+								char buffer[]= new char[READ_BUFFER_SIZE];
 								int bufferCnt= 0;
 								while ((bufferCnt= bufferedReader.read(buffer)) != -1) {
 									contentBuilder.append(buffer, 0, bufferCnt);
@@ -159,8 +161,15 @@ public class SmbtrackConfigSource implements ConfigSource {
 	}
 	
 	private @NonNull Composite parseConfiguration(
-			@NonNull String contentType,
-			@NonNull String content) throws SchemaException, ApiResponseFormatException {
+			@NonNull String contentTypeHeader,
+			@NonNull String content) throws SchemaException, ApiResponseFormatException
+	{
+		String contentType= contentTypeHeader;
+		int charsetOffset= contentType.indexOf(';');
+		if (charsetOffset > 0) {
+			contentType= contentType.substring(0, charsetOffset);
+		}
+		
 		switch (contentType) {
 		case "application/json":
 			return JsonComposite.Parse(content);
@@ -174,6 +183,10 @@ public class SmbtrackConfigSource implements ConfigSource {
 	private @NonNull Composite fetchConfiguration(
 			) throws IOException, SchemaException, ApiResponseFormatException, ApiStatusException
 	{
+		// If we were doing any real volume the Apache HTTP library is more efficient because it
+		// keeps a consistent connection pool, but since we're only pulling something every 5
+		// minutes or so the connections would go stale anyway.  Using the native stuff is one
+		// less dependency to drag in.  -DAW 221007
 		HttpURLConnection connection= (HttpURLConnection)configUrl.openConnection();
 
 		try {
@@ -207,7 +220,7 @@ public class SmbtrackConfigSource implements ConfigSource {
 					}
 					
 					try (InputStreamReader reader= new InputStreamReader(input)) {
-						char[] buffer= new char[4096];
+						char[] buffer= new char[READ_BUFFER_SIZE];
 						int bufferCnt= 0;
 						while ((bufferCnt= reader.read(buffer)) != -1) {
 							response.append(buffer, 0, bufferCnt);
@@ -229,8 +242,7 @@ public class SmbtrackConfigSource implements ConfigSource {
 
 				return parseConfiguration(contentType, content);
 			} else {
-				// Implementation doesn't really specify whether you get ErrorStream or
-				// InputStream - the correct answer seems to be to check ErrorStream first.
+				// User error stream first, or input if error is null
 				InputStream inputStream= connection.getErrorStream();
 				if (inputStream == null) {
 					try {
@@ -241,8 +253,8 @@ public class SmbtrackConfigSource implements ConfigSource {
 				
 				StringBuilder responseText= new StringBuilder();
 				if (inputStream != null) {
-					try (InputStreamReader isr= new InputStreamReader(
-							inputStream, StandardCharsets.UTF_8))
+					try (InputStreamReader isr=
+							new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 					{
 						char[] responseBuffer= new char[2048];
 						
@@ -293,6 +305,8 @@ public class SmbtrackConfigSource implements ConfigSource {
 				try (InputStreamReader isr= new InputStreamReader(
 						connection.getInputStream(), StandardCharsets.UTF_8))
 				{
+					// For now the response isn't actually used - it's just required to be a
+					// JSON object.
 					JsonElement responseElement= JsonParser.parseReader(isr);
 					
 					if (!responseElement.isJsonObject()) {
@@ -320,7 +334,7 @@ public class SmbtrackConfigSource implements ConfigSource {
 					try (InputStreamReader isr= new InputStreamReader(
 							inputStream, StandardCharsets.UTF_8))
 					{
-						char[] responseBuffer= new char[2048];
+						char[] responseBuffer= new char[READ_BUFFER_SIZE];
 						
 						while (true) {
 							int bytesRead= isr.read(responseBuffer);
@@ -381,10 +395,10 @@ public class SmbtrackConfigSource implements ConfigSource {
 			log.error("IO/status exception reading configuration", e);
 		} catch (SchemaException e) {
 			log.error("Invalid response from configuration endpoint", e);
-			reportFailure("invalid-json", "Configuration is not well-formed file");
+			reportFailure("invalid-json", "Configuration is not well-formed file", e);
 		} catch (ApiResponseFormatException e) {
 			log.error("Invalid response from configuration endpoint", e);
-			reportFailure("invalid-json", "Configuration data is not a known MIME type");
+			reportFailure("invalid-json", "Configuration data is not a known MIME type", e);
 		}
 	}
 	
@@ -437,7 +451,8 @@ public class SmbtrackConfigSource implements ConfigSource {
 	@Override
 	public void reportFailure(
 			@NonNull String code,
-			@NonNull String message)
+			@NonNull String message,
+			@Nullable Throwable cause)
 	{
 		if (needsReport) {
 			URL url= rejectUrl;

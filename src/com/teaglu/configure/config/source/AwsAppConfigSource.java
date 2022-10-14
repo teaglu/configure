@@ -207,7 +207,11 @@ public class AwsAppConfigSource implements ConfigSource {
 	}
 
 	@Override
-	public void reportFailure(@NonNull String code, @NonNull String message) {
+	public void reportFailure(
+			@NonNull String code,
+			@NonNull String message,
+			@Nullable Throwable cause)
+	{
 		if (alarmName != null) {
 			try {
 				CloudWatchClient cloudWatchClient= CloudWatchClient.create(); 

@@ -21,6 +21,7 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -284,7 +285,7 @@ public class UrlConfigSource implements ConfigSource {
 			log.error("IO/status exception reading configuration", e);
 		} catch (ApiResponseFormatException|SchemaException e) {
 			log.error("Invalid response from configuration endpoint", e);
-			reportFailure("invalid-json", "Configuration is not well-formed JSON");
+			reportFailure("invalid-json", "Configuration is not well-formed JSON", e);
 		}
 	}
 	
@@ -321,7 +322,8 @@ public class UrlConfigSource implements ConfigSource {
 	@Override
 	public void reportFailure(
 			@NonNull String code,
-			@NonNull String message)
+			@NonNull String message,
+			@Nullable Throwable cause)
 	{
 	}
 }

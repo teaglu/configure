@@ -43,24 +43,12 @@ public class ConfigManagerFactory {
 		
 		return rval;
 	}
-	
-	private static final String DOCKER_FORMAT_ERROR=
-			"Docker secret configuration string does not have the correct number of sections.  " +
-			"The correct format is \"docker:{secret}[:{format}]\".";
-	
-	private static final String AWS_FORMAT_ERROR=
-			"AWS configuration string does not have the correct number of sections.  " +
-			"The correct format is \"aws:{application}:{configuration}:{environment}[:{alarm}[:{pollTime}]]\".";
-	
-	private static final String MANAGED_FORMAT_ERROR=
-			"Managed configuration string does not have the correct number of sections.  " +
-			"The correct format is \"managed:{host}:{token}[:{format}[:{pollTime}]]\".";
-	
+
 	private static final Pattern DOCKER_SECRET_PATTERN= Pattern.compile("^[a-zA-Z0-9_]+$");
 	
 	public @NonNull ConfigManager createFromEnvironment(
 			@NonNull ConfigTarget configTarget,
-			@Nullable SecretReplacer secretReplacer) throws ConfigException
+			@NonNull SecretReplacer secretReplacer) throws ConfigException
 	{
 		String configString= System.getenv("CONFIGURATION");
 		if (configString == null) {
@@ -160,7 +148,9 @@ public class ConfigManagerFactory {
 			@NonNull ConfigTarget configTarget) throws ConfigException
 	{
 		if (uri.getPathSectionCount() != 1) {
-			throw new ConfigException(DOCKER_FORMAT_ERROR);
+			throw new ConfigException(
+					"Docker configuration string does not have the correct number of path " +
+					"components.  The correct format is \"docker://{secret}\".");
 		}
 		
 		String secret= uri.getPathSection(0);
@@ -258,7 +248,9 @@ public class ConfigManagerFactory {
 			@NonNull ConfigTarget configTarget) throws ConfigException
 	{
 		if (uri.getPathSectionCount() != 2) {
-			throw new ConfigException(MANAGED_FORMAT_ERROR);
+			throw new ConfigException(
+					"SMBTrack configuration string does not have the correct number of path " +
+					"components.  The correct format is \"smbtrack://{host}/{token}\".");
 		}
 		
 		String host= uri.getPathSection(0);
@@ -296,12 +288,19 @@ public class ConfigManagerFactory {
 			@NonNull Uri uri,
 			@NonNull ConfigTarget configTarget) throws ConfigException
 	{
+		
+		
 		if (uri.getPathSectionCount() < 4) {
-			throw new ConfigException(AWS_FORMAT_ERROR);
+			throw new ConfigException(
+					"AWS appconfig configuration string does not have the correct number of " +
+					"path sections.  The correct format is \"aws://appconfig/{application}/" +
+					"{configuration}/{environment}\".");
 		}
 
-		if (!uri.getPathSection(0).equals("appconfig")) {
-			throw new ConfigException(AWS_FORMAT_ERROR);
+		String service= uri.getPathSection(0);
+		if (!service.equals("appconfig")) {
+			throw new ConfigException(
+					"The AWS configuration service " + service + " is not supported.");
 		}
 		
 		String applicationId= uri.getPathSection(1);

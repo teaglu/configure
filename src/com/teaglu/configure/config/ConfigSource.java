@@ -1,6 +1,9 @@
 package com.teaglu.configure.config;
 
+import java.io.IOException;
+
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.teaglu.composite.Composite;
 import com.teaglu.configure.exception.ConfigException;
@@ -33,9 +36,10 @@ public interface ConfigSource {
 	 * 
 	 * @return							The new configuration
 	 * 
-	 * @throws ConfigException			Configuration error
+	 * @throws ConfigException			Error parsing or processing configuration
+	 * @throws IOException				Transient error retrieving configuration
 	 */
-	public @NonNull Composite reload() throws ConfigException;
+	public @NonNull Composite reload() throws ConfigException, IOException;
 	
 	/**
 	 * reportSuccess
@@ -51,6 +55,10 @@ public interface ConfigSource {
 	 * 
 	 * @param code						Programmatic code
 	 * @param message					Text reason or more data
+	 * @param cause						The exception that occurred
 	 */
-	public void reportFailure(@NonNull String code, @NonNull String message);
+	public void reportFailure(
+			@NonNull String code,
+			@NonNull String message,
+			@Nullable Throwable cause);
 }

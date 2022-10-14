@@ -21,7 +21,8 @@ public interface ConfigManager {
 	/**
 	 * stop
 	 * 
-	 * Stop any background threads and release any resources.
+	 * Stop any background threads and release any resources.  It's guaranteed that no calls
+	 * to targets will be made after this returns.
 	 */
 	public void stop();
 }

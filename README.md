@@ -152,12 +152,12 @@ use it may be worthwhile to look for changes and apply them instead.
             startJobs(config, secretProvider);
         }
         
-        private static void stopJobs()
+        private static synchronized void stopJobs()
         {
             // FIXME
         }
         
-        private static void startJobs(
+        private static synchronized void startJobs(
                 @NonNull Composite config,
                 @NonNull SecretProvider secretProvider) throws Exception
         {

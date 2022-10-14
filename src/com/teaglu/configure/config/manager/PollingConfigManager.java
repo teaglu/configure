@@ -5,6 +5,7 @@
 
 package com.teaglu.configure.config.manager;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,6 +21,7 @@ import com.google.gson.JsonObject;
 import com.teaglu.composite.Composite;
 import com.teaglu.composite.json.JsonCompositeImpl;
 import com.teaglu.configure.config.ConfigTarget;
+import com.teaglu.configure.exception.ConfigException;
 import com.teaglu.configure.config.ConfigManager;
 import com.teaglu.configure.config.ConfigSource;
 
@@ -75,7 +77,6 @@ public class PollingConfigManager implements ConfigManager, Runnable {
 	    		
 	    		boolean changed= true;
 	    		if (configDigest != null) {
-	    			
 	    			String newDigest= null;
 	    			
 	    			if (config instanceof JsonCompositeImpl) {
@@ -87,8 +88,9 @@ public class PollingConfigManager implements ConfigManager, Runnable {
 	    			}
 	    			
 	    			if (newDigest != null) {
-	    				if (!configDigest.equals(newDigest)) {
-	    					changed= true;
+	    				if (configDigest.equals(newDigest)) {
+	    					changed= false;
+	    				} else {
 	    					configDigest= newDigest;
 	    				}
 	    			}
@@ -103,14 +105,20 @@ public class PollingConfigManager implements ConfigManager, Runnable {
 		    			log.error("Exception applying configuration", e);
 		    			
 		    			configSource.reportFailure("EX",
-		    					"Exception applying configuration");
+		    					"Exception applying configuration", e);
 		    		}
 	    		}
-    		} catch (Exception e) {
+    		} catch (ConfigException e) {
     			log.error("Unable to reload configuration", e);
     			
-    			configSource.reportFailure("EX",
-    					"Exception reloading routes");
+    			configSource.reportFailure("RE",
+    					"Exception reloading configuration", null);
+    		} catch (IOException e) {
+    			log.error("Unable to retrieve configuration", e);
+    			
+    			// If we get an IO exception we don't know whether it's on our end or the other
+    			// end, but either way it probably can't be reached.  There's no reason to try
+    			// to report a failure for most likely transient things.
     		}
     	}
     }
