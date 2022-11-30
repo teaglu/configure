@@ -26,4 +26,6 @@ module com.teaglu.configure {
 	exports com.teaglu.configure.secret;
 	exports com.teaglu.configure.secret.provider;
 	exports com.teaglu.configure.secret.replacer;
+	
+	exports com.teaglu.configure.uri;
 }
