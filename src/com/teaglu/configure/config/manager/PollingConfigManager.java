@@ -112,24 +112,39 @@ public class PollingConfigManager implements ConfigManager, Runnable {
 		    			configTarget.apply(config);
 		    		
 		    			configSource.reportSuccess();
-		    		} catch (Exception e) {
-		    			log.error("Exception applying configuration", e);
+		    		} catch (Exception applyException) {
+		    			log.error(
+		    					"Exception applying configuration",
+		    					applyException);
 		    			
 		    			configSource.reportFailure("EX",
-		    					"Exception applying configuration", e);
+		    					"Exception applying configuration",
+		    					applyException);
 		    		}
 	    		}
-    		} catch (ConfigException e) {
-    			log.error("Unable to reload configuration", e);
+    		} catch (ConfigException reloadException) {
+    			log.error(
+    					"Unable to reload configuration",
+    					reloadException);
     			
     			configSource.reportFailure("RE",
     					"Exception reloading configuration", null);
-    		} catch (IOException e) {
-    			log.error("Unable to retrieve configuration", e);
+    		} catch (IOException retrieveException) {
+    			log.error(
+    					"Unable to retrieve configuration",
+    					retrieveException);
     			
     			// If we get an IO exception we don't know whether it's on our end or the other
     			// end, but either way it probably can't be reached.  There's no reason to try
     			// to report a failure for most likely transient things.
+    		} catch (Exception unexpectedException) {
+    			// The composite library was throwing unchecked Gson exceptions, causing the
+    			// polling thread to die.  I've wrapped those in a checked exception to make
+    			// sure that won't happen again, so the bug should be fixed there.  This is just
+    			// to make sure any other wild unchecked exceptions don't kill the polling thread.
+    			log.error(
+    					"Unexpected unchecked exception in polling loop",
+    					unexpectedException);
     		}
     	}
     }
@@ -157,7 +172,7 @@ public class PollingConfigManager implements ConfigManager, Runnable {
 	}
 	
 	public void start() {
-		thread= new Thread(this, "configuration-poller");
+		thread= new Thread(this, "configuration-manager");
 		thread.start();
 	}
 	
