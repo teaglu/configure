@@ -25,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.teaglu.configure.config.manager.ImmuntableConfigManager;
 import com.teaglu.configure.config.manager.PollingConfigManager;
 import com.teaglu.configure.config.parser.JsonConfigParser;
+import com.teaglu.configure.config.parser.YamlConfigParser;
 import com.teaglu.configure.config.source.AwsAppConfigSource;
 import com.teaglu.configure.config.source.FileConfigSource;
 import com.teaglu.configure.config.source.SmbtrackConfigSource;
@@ -192,6 +193,10 @@ public class ConfigManagerFactory {
 		case "json":
 			parser= JsonConfigParser.Create();
 			break;
+		
+		case "yaml":
+			parser= YamlConfigParser.Create();
+			break;
 			
 		default:
 			throw new ConfigException("Unknown configuration format " + format);
@@ -236,6 +241,10 @@ public class ConfigManagerFactory {
 		switch (format) {
 		case "json":
 			parser= JsonConfigParser.Create();
+			break;
+			
+		case "yaml":
+			parser= YamlConfigParser.Create();
 			break;
 			
 		default:
@@ -304,8 +313,6 @@ public class ConfigManagerFactory {
 			@NonNull Uri uri,
 			@NonNull ConfigTarget configTarget) throws ConfigException
 	{
-		
-		
 		if (uri.getPathSectionCount() < 4) {
 			throw new ConfigException(
 					"AWS appconfig configuration string does not have the correct number of " +

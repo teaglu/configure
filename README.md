@@ -33,9 +33,11 @@ formats are available.
 
 ### docker://{secret}
 
-This creates a configuration based on a docker secret.  The format may be either json or yaml,
-and if omitted json will be assumed.  The configuration will be read once and not monitored
-because secrets are immutable.
+This creates a configuration based on a docker secret which can be in either JSON or YAML format.
+If the format is not specified by using the `format` local parameter, then the library will
+try to guess based on file extension.  If there is no file extension or the extension is not
+`json`, `yaml`, or `yml` then JSON will be assumed.  The configuration will be read once
+and not monitored because secrets are immutable.
 
 ### aws://appconfig/{application}/{configuration}/{environment}
 
@@ -44,6 +46,9 @@ is determined based on the content type returned from AppConfig.  The {applicati
 {configuration}, and {environment} variables refer to the entities of the same name in AWS
 AppConfig.
 
+If the `pollTime` local parameter is set, it is used as an integer number of seconds specifying
+how often to re-query the AppConfig service.  The default value is 300 (5 minutes).
+
 If the `alarm` local parameter is set, then a cloudwatch alarm with the given name will be
 triggered if the configuration fails to apply.  The name should correspond to a cloudwatch
 alarm linked to the configuration so that rollback is triggered.  (Not tested)
@@ -51,19 +56,25 @@ alarm linked to the configuration so that rollback is triggered.  (Not tested)
 ### smbtrack://{host}/{token}
 
 This creates a configuration based on SMBTrack managed configurations.  The {host} variable
-is the hostname of your SMBTrack installation.  If the polltime is omitted 15 seconds is
+is the hostname of your SMBTrack installation, and the {token} variable is the direct access
+token created in the SMBTrack application.
+
+If the `pollTime` local parameter is set, it is used as an integer number of seconds specifying
+how often to re-query the configuration endpoint.  If the polltime is omitted 15 seconds is
 used as the default.
 
 ### debug://{path}
 
 This creates a configuration based on reading a static file.  The path is the absolute or
-relative path to the configuration file.  The format may be either "json" or "yaml" and defaults
-based on the file extension.  The file will be checked every 15 seconds for changes.
+relative path to the configuration file.  If the format is not specified by using the `format`
+local parameter, then the library will try to guess based on file extension.  If there is no
+file extension or the extension is not `json`, `yaml`, or `yml` then JSON will be assumed.
+The file will be checked every 15 seconds for changes.
 
 ### http:// and https://
 
 Using a full URL starting with "http" or "https" will create a configuration based on reading
-from a remote webserver.  The configuration will be polled every 300 seconds.
+from a remote webserver.  The configuration will be polled every 300 seconds (5 minutes).
 
 ## Secrets Manager Factory
 

@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.teaglu</groupId>
 	<artifactId>com.teaglu.configure</artifactId>
-	<version>1.0.5</version>
+	<version>1.1.0</version>
 	<name>Configuration Loader</name>
 	<description>Teaglu Configuration Loader</description>
 
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>com.teaglu</groupId>
 			<artifactId>com.teaglu.composite</artifactId>
-			<version>[1.0.2,2.0.0)</version>
+			<version>[1.1.2,2.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.teaglu.composite.Composite;
 import com.teaglu.composite.exception.SchemaException;
 import com.teaglu.composite.json.JsonComposite;
+import com.teaglu.composite.yaml.YamlComposite;
 import com.teaglu.configure.config.ConfigSource;
 import com.teaglu.configure.exception.ConfigException;
 
@@ -164,8 +165,12 @@ public class AwsAppConfigSource implements ConfigSource {
 						// Mark that a new configuration is available.
 						configPending= true;
 						break;
+
+					case "application/yaml":
+						config= YamlComposite.Parse(content);
 						
-					// Add YAML here when support added to composite
+						configPending= true;
+						break;
 						
 					default:
 						throw new ConfigException(

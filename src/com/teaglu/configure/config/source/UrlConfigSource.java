@@ -47,6 +47,7 @@ import com.google.gson.JsonSyntaxException;
 import com.teaglu.composite.Composite;
 import com.teaglu.composite.exception.SchemaException;
 import com.teaglu.composite.json.JsonComposite;
+import com.teaglu.composite.yaml.YamlComposite;
 import com.teaglu.configure.config.ConfigSource;
 import com.teaglu.configure.exception.ApiResponseFormatException;
 import com.teaglu.configure.exception.ApiStatusException;
@@ -142,6 +143,9 @@ public class UrlConfigSource implements ConfigSource {
 		switch (contentType) {
 		case "application/json":
 			return JsonComposite.Parse(content);
+			
+		case "application/yaml":
+			return YamlComposite.Parse(content);
 			
 		default:
 			throw new ApiResponseFormatException(
