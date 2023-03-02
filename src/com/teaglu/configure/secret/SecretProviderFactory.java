@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.teaglu.configure.exception.ConfigException;
 import com.teaglu.configure.secret.provider.AwsSecretProvider;
-import com.teaglu.configure.secret.provider.DebugSecretProvider;
+import com.teaglu.configure.secret.provider.PropertyFileSecretProvider;
 import com.teaglu.configure.secret.provider.DockerSecretProvider;
 import com.teaglu.configure.secret.provider.NullSecretProvider;
 import com.teaglu.configure.uri.Uri;
@@ -74,11 +74,12 @@ public class SecretProviderFactory {
 				return DockerSecretProvider.Create(path);
 				
 			case "debug":
+			case "file":
 				if (uri.getPathSectionCount() < 1) {
 					throw new ConfigException("Debug secret URI requires a path");
 				}
 				
-				return DebugSecretProvider.Create(uri.getPathAsLocal());
+				return PropertyFileSecretProvider.Create(uri.getPathAsLocal());
 				
 			case "aws":
 				if (uri.getPathSectionCount() != 3) {

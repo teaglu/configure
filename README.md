@@ -63,13 +63,18 @@ If the `pollTime` local parameter is set, it is used as an integer number of sec
 how often to re-query the configuration endpoint.  If the polltime is omitted 15 seconds is
 used as the default.
 
-### debug://{path}
+### file://{path}
 
 This creates a configuration based on reading a static file.  The path is the absolute or
 relative path to the configuration file.  If the format is not specified by using the `format`
 local parameter, then the library will try to guess based on file extension.  If there is no
 file extension or the extension is not `json`, `yaml`, or `yml` then JSON will be assumed.
-The file will be checked every 15 seconds for changes.
+The file will be checked every five minutes for changes.
+
+### debug://{path}
+
+This creates a configuration based on reading a static file.  The format is the same as the
+`file` schema - the only difference is that the file is checked every 15 seconds for changes.
 
 ### http:// and https://
 
@@ -92,11 +97,16 @@ properties file, consisting of keys followed by a colon and a value.
 This creates a secret provider based on AWS SecretsManager.  The region and secret name correspond
 to the AWS region code and the name of the secret.
 
-### debug://{path}
+### file://{path}
 
 This creates a secret provider based on reading a static file.  The path is the absolute or
 relative path to the configuration file.  The file is formatted as a java properties file,
 consisting of keys followed by a colon and a value.
+
+### debug://{path}
+
+This creates a secret provider based on reading a static file.  The format and behavior are the
+same as the `file` schema.
 
 ## Example Startup Code
 

@@ -97,7 +97,10 @@ public class ConfigManagerFactory {
 			return createDockerConfigManager(uri, configTarget);
 			
 		case "debug":
-			return createDebugConfigManager(uri, configTarget);
+			return createFileConfigManager(uri, configTarget, 15);
+			
+		case "file":
+			return createFileConfigManager(uri, configTarget, 300);
 			
 		case "aws":
 			return createAwsConfigManager(uri, configTarget);
@@ -207,25 +210,24 @@ public class ConfigManagerFactory {
 	}
 
 	/**
-	 * createDebugConfigManager
+	 * createFileConfigManager
 	 * 
-	 * Create a configuration manager that reads an arbitrary file, mainly for use in running
-	 * code in the debugger.  The entire argument is used as the path - this makes it more
-	 * convenient to debug on Windows machines where a colon is a normal part of the path.
-	 * 
-	 * This runs a polling manager with a 15-second cycle, because it's not like we're charged
-	 * for API hits.
+	 * Create a configuration manager that reads an arbitrary file.  The entire argument is
+	 * used as the path - this makes it more convenient to debug on Windows machines where a
+	 * colon is a normal part of the path.
 	 * 
 	 * @param path						Path to file
 	 * @param configTarget				Target to build for
+	 * @param pollSeconds				How often to poll
 	 * 
 	 * @return							New manager
 	 * 
 	 * @throws ConfigException			Something failed
 	 */
-	private @NonNull ConfigManager createDebugConfigManager(
+	private @NonNull ConfigManager createFileConfigManager(
 			@NonNull Uri uri,
-			@NonNull ConfigTarget configTarget) throws ConfigException
+			@NonNull ConfigTarget configTarget,
+			int pollSeconds) throws ConfigException
 	{
 		String path= uri.getPathAsLocal();
 		
@@ -253,7 +255,7 @@ public class ConfigManagerFactory {
 		
 		ConfigSource source= FileConfigSource.Create(path, parser);
 		
-		return PollingConfigManager.Create(source, configTarget, 15);
+		return PollingConfigManager.Create(source, configTarget, pollSeconds);
 	}
 	
 	/**

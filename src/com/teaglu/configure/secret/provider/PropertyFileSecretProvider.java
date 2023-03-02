@@ -28,16 +28,14 @@ import org.slf4j.LoggerFactory;
 import com.teaglu.configure.exception.ConfigException;
 import com.teaglu.configure.secret.SecretProvider;
 
-public class DebugSecretProvider implements SecretProvider {
-	private static final Logger log= LoggerFactory.getLogger(DebugSecretProvider.class);
+public class PropertyFileSecretProvider implements SecretProvider {
+	private static final Logger log= LoggerFactory.getLogger(PropertyFileSecretProvider.class);
 	
 	private final Properties secrets= new Properties();
 		
-	private DebugSecretProvider(
+	private PropertyFileSecretProvider(
 			@NonNull String path) throws ConfigException
 	{
-		log.warn("Using debug secret provider from secret file " + path);
-		
 		File secretFile= new File(path);
 		if (!secretFile.exists()) {
 			throw new ConfigException(
@@ -55,7 +53,7 @@ public class DebugSecretProvider implements SecretProvider {
 	public static @NonNull SecretProvider Create(
 			@NonNull String dockerSecret) throws ConfigException
 	{
-		return new DebugSecretProvider(dockerSecret);
+		return new PropertyFileSecretProvider(dockerSecret);
 	}
 
 	@Override
