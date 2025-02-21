@@ -22,15 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.eclipse.jdt.annotation.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.teaglu.configure.exception.ConfigException;
 import com.teaglu.configure.secret.SecretProvider;
 
 public class PropertyFileSecretProvider implements SecretProvider {
-	private static final Logger log= LoggerFactory.getLogger(PropertyFileSecretProvider.class);
-	
 	private final Properties secrets= new Properties();
 		
 	private PropertyFileSecretProvider(
@@ -64,8 +59,6 @@ public class PropertyFileSecretProvider implements SecretProvider {
 		if (rval == null) {
 			throw new ConfigException("Secret " + name + " is not defined");
 		}
-		
-		log.info("Deferenced secret " + name);
 		
 		return rval;
 	}
