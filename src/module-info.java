@@ -25,12 +25,13 @@ module com.teaglu.configure {
 	requires software.amazon.awssdk.services.appconfig;
 	requires software.amazon.awssdk.services.appconfigdata;
 	requires software.amazon.awssdk.services.secretsmanager;
+	requires software.amazon.awssdk.services.cloudwatch;
 	requires software.amazon.awssdk.utils;
 	
 	requires org.slf4j;
 	
 	requires transitive com.teaglu.composite;
-	requires software.amazon.awssdk.services.cloudwatch;
+	requires transitive com.google.gson;
 	
 	exports com.teaglu.configure.exception;
 	

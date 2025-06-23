@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.teaglu</groupId>
 	<artifactId>com.teaglu.configure</artifactId>
-	<version>1.2.8</version>
+	<version>1.2.9</version>
 	<name>Configuration Loader</name>
 	<description>Teaglu Configuration Loader</description>
 
@@ -25,11 +25,24 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+
+	<dependencyManagement>
+	    <dependencies>
+	        <dependency>
+	            <groupId>software.amazon.awssdk</groupId>
+	            <artifactId>bom</artifactId>
+	            <version>2.31.66</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+	    </dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.teaglu</groupId>
 			<artifactId>com.teaglu.composite</artifactId>
-			<version>[1.1.9,2.0.0)</version>
+			<version>1.1.10</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -56,37 +69,30 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>aws-core</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>sdk-core</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>auth</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>appconfig</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>appconfigdata</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>secretsmanager</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>cloudwatch</artifactId>
-			<version>[2.30.16, 2.31.0)</version>
 		</dependency>
 	</dependencies>
 </project>
